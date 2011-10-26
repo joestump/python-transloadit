@@ -1,0 +1,28 @@
+## Overview
+
+This is a Python client for the Transloadit service, which is a cloud encoder for images, video, and other content that needs marshalling around the internet. Before you get started you'll want to [enable API authentication](http://transloadit.com/docs/authentication).
+
+
+## Usage
+
+The following example shows you how to import an image from somewhere on the internet and run it through one of your templates.
+
+
+    from transloadit.client import Client
+
+    AUTH_KEY = 'Your_Key_Here'
+    AUTH_SECRET = 'Your_Secret_Here'
+
+    client = Client(AUTH_KEY, AUTH_SECRET)
+    params = {
+        'steps': {
+            ':original': {
+                'robot': '/http/import',
+                'url': 'http://example.com/some_image.jpg'
+            }
+        },
+        'template_id': 'your_template_id_here'
+    }
+
+    result = client.request(**params)
+    print result
