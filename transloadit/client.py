@@ -5,6 +5,11 @@ import httplib
 import mimetypes
 from datetime import datetime, timedelta
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 
 try:
     from django.utils import simplejson as json
@@ -43,29 +48,30 @@ class Client(object):
         return json.loads(req.file.read())
 
     def _encode_request(self, fields, files):
-        payload = []
+        body = StringIO()
 
         for key, value in fields.iteritems():
-            payload.append('--' + FILE_BOUNDARY)
-            payload.append('Content-Disposition: form-data; name="%s"' % key)
-            payload.append('')
-            payload.append(value)
+            body.write('--%s%s' % (FILE_BOUNDARY, CRLF))
+            body.write('Content-Disposition: form-data; name="%s"%s' % (key, CRLF))
+            body.write(CRLF)
+            body.write(value)
+            body.write(CRLF)
 
         if files:
             for key, filename, value in files:
                 content_type = self._get_content_type(filename)
-                payload.append('--' + FILE_BOUNDARY)
-                payload.append('Content-Disposition: form-data;' + \
-                    ' name="%s"; filename="%s"' % (key, filename))
-                payload.append('Content-Type: %s' % content_type)
-                payload.append('')
-                payload.append(value)
+                body.write('--%s%s' % (FILE_BOUNDARY, CRLF))
+                body.write('Content-Disposition: form-data;' + \
+                    ' name="%s"; filename="%s"%s' % (key, filename, CRLF))
+                body.write('Content-Type: %s%s' % (content_type, CRLF))
+                body.write(CRLF)
+                body.write(value)
+                body.write(CRLF)
 
-        payload.append('--%s--' % FILE_BOUNDARY)
-        payload.append('')
-        body = CRLF.join(payload)
+        body.write('--%s--%s' % (FILE_BOUNDARY, CRLF))
+        body.write(CRLF)
         content_type = 'multipart/form-data; boundary=%s' % FILE_BOUNDARY
-        return content_type, body
+        return content_type, body.getvalue()
 
     def _get_content_type(self, filename):
         return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
