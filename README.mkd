@@ -26,3 +26,11 @@ The following example shows you how to import an image from somewhere on the int
 
     result = client.request(**params)
     print result
+
+
+## Installing on Python 2.6 or older
+The package depends on the ``json`` module added in Python 2.7, but we fall
+back to importing ``simplejson`` if ``json`` is not available. To make
+``python-transloadit`` to work in Python 2.6 or older, install ``simplejson``:
+
+    $ pip install simplejson

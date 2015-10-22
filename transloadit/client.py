@@ -12,9 +12,12 @@ except ImportError:
 
 
 try:
-    from django.utils import simplejson as json
-except ImportError:
+    # Should be (manually) installed if using Python 2.6 or older,
+    # or if you want the speedup for raw bytestrings provided by
+    # simplejson.
     import simplejson as json
+except ImportError:
+    import json # Works with python 2.7+
 
 
 BASE_API = 'http://api2.transloadit.com/assemblies'
@@ -45,7 +48,15 @@ class Client(object):
         req.endheaders()
         req.send(body)
         errcode, errmsg, headers = req.getreply()
-        return json.loads(req.file.read())
+        output = req.file.read()
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            # Workaround for https://github.com/joestump/python-transloadit/issues/5
+            output = '{' + output.split('{', 1)[-1]
+            output = output.rsplit('}', 1)[0] + '}'
+            return json.loads(output)
+
 
     def _encode_request(self, fields, files):
         body = StringIO()
