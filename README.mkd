@@ -26,3 +26,13 @@ The following example shows you how to import an image from somewhere on the int
 
     result = client.request(**params)
     print result
+
+### Multipart file uploads
+You can also upload files via a `files` keyword argument.
+
+```
+files = {'file': open('report.xls', 'rb')}
+result = client.request(files=files, **params)
+```
+
+Check [requests files](http://docs.python-requests.org/en/latest/user/quickstart/#post-a-multipart-encoded-file) format for file examples.
