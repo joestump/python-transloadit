@@ -41,7 +41,10 @@ class Client(object):
             self.api = ASSEMBLY_API_URL
 
     def _sign_request(self, params):
-        return hmac.new(self.secret, json.dumps(params),
+        secret = self.secret
+        if not isinstance(secret, bytes):
+            secret = secret.encode('utf-8')
+        return hmac.new(secret, json.dumps(params).encode('utf-8'),
             hashlib.sha1).hexdigest()
 
     def request(self, files=None, **params):
